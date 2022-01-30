@@ -51,6 +51,11 @@ namespace SteamTool
             }
             buf.WriteLine("{0}{1}", "Files found: ", csgo.files.Count);
             buf.WriteLine("{0}{1}", "Next demo number: ", csgo.maxnum + 1);
+            if (options.dostore)
+            {
+                csgo.StorePlayers();
+                buf.WriteLine("Stored players.");
+            }
             if (options.docopy)
             {
                 csgo.CopyFiles();

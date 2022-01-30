@@ -10,7 +10,7 @@ namespace SteamTool
         public string steam_folder = string.Empty;
         public string apps_folder = string.Empty;
         public string libs_file = string.Empty;
-        Dictionary<string, VifEntry> manifests = new Dictionary<string, VifEntry>();
+        readonly Dictionary<string, VifEntry> manifests = new Dictionary<string, VifEntry>();
 
         public Steam()
         {
@@ -28,7 +28,7 @@ namespace SteamTool
                 throw new Exception(string.Format("File does not exist: {0}", libs_file));
             // Read the libfolders file
             string contents = File.ReadAllText(libs_file);
-            VifEntry libraries = VifEntry.Scan(ref contents);
+            //VifEntry libraries = VifEntry.Scan(ref contents);
             // Read the manifest files
             string[] filelist = Directory.GetFiles(apps_folder);
             foreach (string filename in filelist)

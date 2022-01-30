@@ -37,6 +37,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.TxtOutputFolder = new System.Windows.Forms.TextBox();
             this.BtnOutputFolder = new System.Windows.Forms.Button();
+            this.BtnStore = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // BtnCopy
@@ -133,12 +134,23 @@
             this.BtnOutputFolder.UseVisualStyleBackColor = true;
             this.BtnOutputFolder.Click += new System.EventHandler(this.BtnOutputFolder_Click);
             // 
+            // BtnStore
+            // 
+            this.BtnStore.Location = new System.Drawing.Point(255, 110);
+            this.BtnStore.Name = "BtnStore";
+            this.BtnStore.Size = new System.Drawing.Size(75, 23);
+            this.BtnStore.TabIndex = 7;
+            this.BtnStore.Text = "Store";
+            this.BtnStore.UseVisualStyleBackColor = true;
+            this.BtnStore.Click += new System.EventHandler(this.BtnStore_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.BtnCancel;
             this.ClientSize = new System.Drawing.Size(729, 478);
+            this.Controls.Add(this.BtnStore);
             this.Controls.Add(this.BtnOutputFolder);
             this.Controls.Add(this.TxtOutputFolder);
             this.Controls.Add(this.label2);
@@ -168,6 +180,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox TxtOutputFolder;
         private System.Windows.Forms.Button BtnOutputFolder;
+        private System.Windows.Forms.Button BtnStore;
     }
 }
 

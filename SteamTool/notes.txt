@@ -1,0 +1,35 @@
+﻿--------------------------------------------------------------------------------
+TODO Insert reference to documentation for how to find the csgo app and how to
+unpack the valve init files.
+--------------------------------------------------------------------------------
+https://developer.valvesoftware.com/wiki/SteamID#As_Represented_Textually
+SteamIDs follow a fairly simple format when represented textually:
+    "STEAM_X:Y:Z", where X, Y and Z are integers.
+In select cases "STEAM_ID_PENDING" or "UNKNOWN" are used.
+X represents the "Universe" the steam account belongs to.
+Y is part of the ID number for the account. Y is either 0 or 1.
+Z is the "account number".
+Note that I use 80 chars to store it, but we should only need
+--------------------------------------------------------------------------------
+Found the sqlite cli here (it was installed with visual studio):
+
+"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\Extensions\Microsoft\Python\Miniconda\Miniconda3-x64\Library\bin\sqlite3.exe"
+
+This batch file worked:
+
+--cut--
+@set mysqlite3="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\Extensions\Microsoft\Python\Miniconda\Miniconda3-x64\Library\bin\sqlite3.exe"
+@
+@set myargs=playerdb.sqlite -header -column
+@
+%mysqlite3% %myargs% "select * from players; select * from nicks; select * from abuses;"
+
+%mysqlite3% %myargs% "select players.steamid, nicks.nick, abuses.abuse from players inner join nicks on players.id = nicks.playerid inner join abuses on players.id = abuses.playerid"
+
+%mysqlite3% %myargs% "select players.steamid, abuses.abuse from players inner join abuses on players.id = abuses.playerid"
+
+%mysqlite3% %myargs% "select players.steamid, group_concat(distinct abuses.abuse) from players inner join abuses on players.id = abuses.playerid group by players.steamid"
+
+%mysqlite3% %myargs% "select players.steamid, group_concat(distinct nicks.nick), group_concat(distinct abuses.abuse) from players inner join nicks on players.id = nicks.playerid inner join abuses on players.id = abuses.playerid group by players.steamid"
+--cut--
+--------------------------------------------------------------------------------

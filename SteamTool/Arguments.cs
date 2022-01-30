@@ -9,6 +9,7 @@ namespace SteamTool
         public string output_folder = string.Empty;
         public bool docopy = false;
         public bool docfg = false;
+        public bool dostore = false;
 
         public Arguments(string[] args)
         {
@@ -37,6 +38,8 @@ namespace SteamTool
                         docopy = true;
                     else if (ch == 'r')
                         docfg = true;
+                    else if (ch == 's')
+                        dostore = true;
                     else if (ch == '?' || ch == 'h' || ch == '-')
                         throw new Exception(string.Format("Usage: {0} [-c] [-r] [outputfolder]", AppDomain.CurrentDomain.FriendlyName));
                     else

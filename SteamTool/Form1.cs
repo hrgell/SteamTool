@@ -1,5 +1,4 @@
 ﻿using Microsoft.Win32;
-using Microsoft.Win32;
 using System;
 using System.Text;
 using System.Windows.Forms;
@@ -52,9 +51,11 @@ namespace SteamTool
 
         private void BtnOutputFolder_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog dlg = new FolderBrowserDialog();
-            dlg.Description = "Select the output folder.";
-            //dlg.RootFolder = Environment.SpecialFolder.Personal;
+            FolderBrowserDialog dlg = new FolderBrowserDialog
+            {
+                Description = "Select the output folder."
+                //RootFolder = Environment.SpecialFolder.Personal
+            };
             DialogResult rst = dlg.ShowDialog();
             if (rst == DialogResult.OK)
             {
@@ -67,5 +68,18 @@ namespace SteamTool
         {
             TxtMessages.Text = msgs;
         } // method
+
+        private void BtnStore_Click(object sender, EventArgs e)
+        {
+            string output_folder = TxtOutputFolder.Text;
+            if (output_folder.Length == 0)
+            {
+                MessageBox.Show("You must select an output folder.", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            string[] args = { "-s", output_folder };
+            StringBuilder buf = Program.DoMyTask(args);
+            TxtMessages.Text = buf.ToString();
+        }
     } // class
 } // namespace
