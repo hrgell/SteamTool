@@ -114,14 +114,12 @@ namespace SteamTool
             return true;
         }
 
-
-        // TODO Implement this function so it adds a row to the database.
         private void ProcessConsoleLine(SQLiteConnection connection, string line)
         {
             if (string.IsNullOrEmpty(line))
                 return;
             // Locate the steamid STEAM_Y:XXX:ZZZZZZZZZ
-            int steamid_start = -1; // line.IndexOf("STEAM_");
+            int steamid_start = -1;
             Match match = rx_steamid.Match(line);
             if (match.Success)
             {
@@ -130,14 +128,14 @@ namespace SteamTool
 
             if (steamid_start == 0)
             {
-                // the line contains a steamid at the start of the line. We don't like that.
+                // The line contains a steamid at the start of the line. We don't like that.
                 System.Diagnostics.Debug.WriteLine("[START_OF_LINE] " + line);
                 return;
 
             }
             if (steamid_start < 0)
             {
-                // the line does not contain a steamid, and may be empty.
+                // The line does not contain a steamid, and may be empty.
                 //System.Diagnostics.Debug.WriteLine(line);
                 return;
             }
@@ -154,20 +152,21 @@ namespace SteamTool
                 int nick_start = namepart.IndexOf('"') + 1;
                 if(nick_start > 0)
                 {
-                    int nick_end = namepart.Length - nick_start - 2;
-                    if (nick_end >= nick_start)
+                    int nick_length = namepart.Length - nick_start - 2;
+                    if (nick_length >= nick_start)
                     {
-                        string nick = namepart.Substring(nick_start, nick_end);
-                        System.Diagnostics.Debug.WriteLine("[NICK] " + steamid + "-> '" + nick + "'");
-                        if (!players.ContainsKey(steamid))
+                        if (namepart[nick_start + nick_length] == '"')
                         {
-                            //System.Diagnostics.Debug.WriteLine("[ADD] " + steamid + " -> " + nick);
-                            players.Add(steamid, nick);
+                            string nick = namepart.Substring(nick_start, nick_length);
+                            System.Diagnostics.Debug.WriteLine("[NICK] " + steamid + "-> '" + nick + "'");
+                            if (!players.ContainsKey(steamid))
+                            {
+                                //System.Diagnostics.Debug.WriteLine("[ADD] " + steamid + " -> " + nick);
+                                players.Add(steamid, nick);
+                            }
                         }
                     }
                 }
-                // Example:
-                // # 363 21 "nick" STEAM_X:Y:ZZZZZZZZZ 22:09 90 0 active 196608
                 return;
             }
 
@@ -178,31 +177,10 @@ namespace SteamTool
             {
                 System.Diagnostics.Debug.WriteLine("[ABUSE_CONSOLE" + line);
                 System.Diagnostics.Debug.WriteLine("[FOUND] " + steamid + " -> '" + abuse + "'");
-                abusers.Add(new Tuple<string, string>(steamid, abuse));
-                // Examples:
-                //
-                // "STEAM_Y:XXX:ZZZZZZZZZ
-                // STEAM_Y:XXX:ZZZZZZZZZ"
-                // "STEAM_Y:XXX:ZZZZZZZZZ"
-                // Examples with echo, although say or say_team can be used instead.
-                // echo "trollnick" STEAM_Y:XXX:ZZZZZZZZZ teamgrief
-                // echo "trollnick" "STEAM_Y:XXX:ZZZZZZZZZ teamgrief
-                // echo "trollnick" "STEAM_Y:XXX:ZZZZZZZZZ" teamgrief
-                // echo "trollnick" "STEAM_Y:XXX:ZZZZZZZZZ teamgrief"
-                // echo trollnick" STEAM_Y:XXX:ZZZZZZZZZ teamgrief
-                // echo    trollnick" STEAM_Y:XXX:ZZZZZZZZZ teamgrief
-                //
-                // I saw these two cases when testing on condumps:
-                //
-                // [ABUSE_CONSOLE] "trollnick" STEAM_1:0:134nknown command: trollnick
-                // [ABUSE_CONSOLE] "trollnick" STEAM_1: 0:134830 greif
-                //
-                // We don't want to insert the first case, because that's obviously a typo.
-                // We can ignore the first case, if we require that Z must be followed by nothing, spapce or double-quote.
-                //
-                // When we wait and only add abusers AFTER we have processed all the status lines, then we can check the
-                // previously scanned startus lines for valid steamids, and catch typos.
-
+                // Filter out abuses that stat lines like: 22:09 90 0 active 196608
+                bool has_digit = abuse.Length > 0 && char.IsDigit(abuse[0]);
+                if (!has_digit)
+                    abusers.Add(new Tuple<string, string>(steamid, abuse));
                 return;
             }
 
@@ -211,11 +189,12 @@ namespace SteamTool
             int pos2 = line.IndexOf(" : ");
             if (pos2 >= 0 && pos2 < steamid_start)
             {
-                // (Counter-Terrorist) mynick‎ @ CT Start :     "trollnick" STEAM_Y:XXX:ZZZZZZZZZ teamgrief
-                // mynick : "trollnick" STEAM_Y:XXX:ZZZZZZZZZ teamgrief
                 System.Diagnostics.Debug.WriteLine("[ABUSE_SAY] " + line);
                 System.Diagnostics.Debug.WriteLine("[FOUND] " + steamid + " -> '" + abuse + "'");
-                abusers.Add(new Tuple<string, string>(steamid, abuse));
+                // Filter out abuses that stat lines like: 22:09 90 0 active 196608
+                bool has_digit = abuse.Length > 0 && char.IsDigit(abuse[0]);
+                if (!has_digit)
+                    abusers.Add(new Tuple<string, string>(steamid, abuse));
                 return;
             }
 
@@ -242,35 +221,26 @@ namespace SteamTool
                 }
             }
 
-            // TODO process the collected players and abusers.
+            // Process the collected abusers.
             foreach(var tuble in abusers)
             {
                 string steamid = tuble.Item1;
+                string abuse = tuble.Item2;
                 if (!players.ContainsKey(steamid))
                 {
-                    // TODO We can look in the db of we have the player there already.
+                    // Check if the player is in the db already.
+                    int playerid = MySQLite.Lookup_Players(connection, steamid);
+                    if (playerid != -1)
+                    {
+                        if (MySQLite.Lookup_Abuses(connection, playerid, abuse) == -1)
+                            MySQLite.Insert_Abuse(connection, playerid, abuse);
+                    }
                     continue;
                 }
-                string abuse = tuble.Item2;
-                // TODO: Filter out abuses that stat lines like: 22:09 90 0 active 196608
-                // TODO: Remove quotes from the abuse line
                 string nick = players[steamid];
                 MySQLite.InsertPlayer(connection, steamid, nick, (abuse.Length == 0) ? "afk" : abuse);
             }
-
-            // TODO: Insert players we have met, that don't abuse?
-
-            /*
-            SQLite_InsertPlayer(connection, "steamid1", "nickname1", "afk1");
-            SQLite_InsertPlayer(connection, "steamid1", "nickname1", "afk1");
-            SQLite_InsertPlayer(connection, "steamid2", "nickname2", "afk2");
-            SQLite_InsertPlayer(connection, "steamid2", "nickname2", "afk2b");
-            SQLite_InsertPlayer(connection, "steamid3", "nickname3", "afk1");
-            SQLite_InsertPlayer(connection, "steamid3", "nickname3", "afk2");
-            SQLite_InsertPlayer(connection, "steamid3", "nickname3", "afk2b");
-            SQLite_InsertPlayer(connection, "steamid3", "nickname3", "afk3");
-            SQLite_InsertPlayer(connection, "steamid3", "nickname3b", "afk3");
-            */
+            // TODO Insert players we have met, that don't abuse?
         }
 
         public void StorePlayers()
