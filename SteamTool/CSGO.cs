@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.IO;
 using Microsoft.Win32;
 using System.Data.SQLite;
+using System.Text.RegularExpressions;
 
 namespace SteamTool
 {
@@ -12,18 +13,32 @@ namespace SteamTool
     class CSGO
     {
         public long files_copied = 0;
+        // TODO Add move_files to Arguments, use -m to set it to true.
+        // TODO Change the default to false when move_files have been added to Arguments.
         public bool move_files = true;
-        public List<string> files = new List<string>();
+        public List<string> files = null;
         public long maxnum = 0;
-        // Marked these readonly because the compiler suggested it - but we assign to them here AND in the constructor.
+        // Marked these readonly because the compiler suggested it - we assign to them here, but we also assign to some of them in the constructor. /shrug.
+        // Need to update to .Net6 to get better initialization - I don't want them to be null at any time, because it makes the other code easier to maintain.
         public readonly string csgo_folder = string.Empty;
         public readonly string screenshots_folder = string.Empty;
         public readonly string output_folder = string.Empty;
         public readonly string db_filename = string.Empty;
         public readonly string db_connection_string = string.Empty;
+        // These are used while processing files
+        private readonly Regex rx_steamid = null;
+        private readonly Dictionary<string, string> players = null;
+        private readonly List<Tuple<string, string>> abusers = null;
+        private readonly char[] charsToTrim = { '\t', ' ', '"', ',' };
 
         public CSGO(string game_folder, string output_folder)
         {
+            //string pattern = "(STEAM_[0-9]:[0-9]+:[0-9]+)(?:([ \"]|$))";
+            string pattern = "(STEAM_[0-9]:[0-9]+:[0-9]+)(?:[ \"]|$)";
+            rx_steamid = new Regex(pattern);
+            players = new Dictionary<string, string>();
+            abusers = new List<Tuple<string, string>>();
+
             this.output_folder = output_folder;
             db_filename = Path.Combine(output_folder, "playerdb.sqlite");
             db_connection_string = String.Format("Data Source={0};Version=3;", db_filename);
@@ -33,6 +48,7 @@ namespace SteamTool
                 throw new Exception(string.Format("Folder does not exist: {0}", csgo_folder));
             screenshots_folder = Path.Combine(csgo_folder, "screenshots");
 
+            files = new List<string>();
             // Get .dem and .txt files
             string[] filelist = Directory.GetFiles(csgo_folder);
             foreach (string filename in filelist)
@@ -98,201 +114,153 @@ namespace SteamTool
             return true;
         }
 
-        private void SQLite_CreateTable_Players(SQLiteConnection connection)
+
+        // TODO Implement this function so it adds a row to the database.
+        private void ProcessConsoleLine(SQLiteConnection connection, string line)
         {
-            string sql = "create table players (id INTEGER PRIMARY KEY AUTOINCREMENT, steamid varchar(80) NOT NULL)";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+            if (string.IsNullOrEmpty(line))
+                return;
+            // Locate the steamid STEAM_Y:XXX:ZZZZZZZZZ
+            int steamid_start = -1; // line.IndexOf("STEAM_");
+            Match match = rx_steamid.Match(line);
+            if (match.Success)
             {
-                command.ExecuteNonQuery();
+                steamid_start = match.Groups[1].Index;
             }
 
-            sql = "CREATE UNIQUE INDEX idx_players_steamid ON players(steamid)";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+            if (steamid_start == 0)
             {
-                command.ExecuteNonQuery();
-            }
-        }
+                // the line contains a steamid at the start of the line. We don't like that.
+                System.Diagnostics.Debug.WriteLine("[START_OF_LINE] " + line);
+                return;
 
-        private void SQLite_CreateTable_Nicks(SQLiteConnection connection)
-        {
-            string sql = "create table nicks (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    "playerid INTEGER NOT NULL," +
-                    //"nick varchar(100) NOT NULL," +
-                    "nick varchar(100)," +
-                    "FOREIGN KEY (playerid) " +
-                    "REFERENCES players (id) ON UPDATE CASCADE ON DELETE CASCADE" +
-                    ")";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.ExecuteNonQuery();
             }
-
-            sql = "CREATE INDEX idx_nicks_playerid ON nicks(playerid)";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+            if (steamid_start < 0)
             {
-                command.ExecuteNonQuery();
-            }
-
-            sql = "CREATE INDEX idx_nicks_nick ON nicks(nick)";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.ExecuteNonQuery();
-            }
-
-            sql = "CREATE UNIQUE INDEX idx_nicks_playerid_nick ON nicks(playerid, nick)";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.ExecuteNonQuery();
-            }
-        }
-
-        private void SQlite_CreateTable_Abuses(SQLiteConnection connection)
-        {
-            string sql = "create table abuses (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "playerid INTEGER NOT NULL, " +
-                    //"abuse varchar(40) NOT NULL, " +
-                    "abuse varchar(40), " +
-                    "FOREIGN KEY (playerid) " +
-                    "REFERENCES players (id) ON UPDATE CASCADE ON DELETE CASCADE" +
-                    ")";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.ExecuteNonQuery();
-            }
-
-            sql = "CREATE INDEX idx_abuses_playerid ON abuses(playerid)";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.ExecuteNonQuery();
-            }
-
-            sql = "CREATE INDEX idx_abuses_abuse ON abuses(abuse)";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.ExecuteNonQuery();
-            }
-
-            sql = "CREATE UNIQUE INDEX idx_abuses_playerid_abuse ON abuses(playerid, abuse)";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.ExecuteNonQuery();
-            }
-        }
-
-        private int SQLite_Lookup_Players(SQLiteConnection connection, string steamid)
-        {
-            int id = -1;
-            string sql = "SELECT id FROM players WHERE steamid = @steamid";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.Parameters.AddWithValue("@steamid", steamid);
-                object field = command.ExecuteScalar();
-                if (field != null)
-                {
-                    //playerid = (int)ob;
-                    // TODO I think sqlite uses 64 bit int - detect if 32-bit or 64-bit, and use the right int type.
-                    id = Convert.ToInt32(field);
-                }
-            }
-            return id;
-        }
-
-        private int SQLite_Lookup_Nicks(SQLiteConnection connection, int playerid, string nick)
-        {
-            int id = -1;
-            string sql = "SELECT id FROM nicks WHERE playerid = @playerid and nick = @nick";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.Parameters.AddWithValue("@playerid", playerid);
-                command.Parameters.AddWithValue("@nick", nick);
-                object field = command.ExecuteScalar();
-                if (field != null)
-                {
-                    id = Convert.ToInt32(field);
-                }
-            }
-            return id;
-        }
-
-        private int SQLite_Lookup_Abuses(SQLiteConnection connection, int playerid, string abuse)
-        {
-            int id = -1;
-            string sql = "SELECT id FROM abuses WHERE playerid = @playerid and abuse = @abuse";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.Parameters.AddWithValue("@playerid", playerid);
-                command.Parameters.AddWithValue("@abuse", abuse);
-                object field = command.ExecuteScalar();
-                if (field != null)
-                {
-                    id = Convert.ToInt32(field);
-                }
-            }
-            return id;
-        }
-
-        private void SQLite_Insert_Steamid(SQLiteConnection connection, string steamid)
-        {
-            //string sql = "INSERT OR IGNORE INTO players(steamid) VALUES(@steamid)";
-            string sql = "INSERT INTO players(steamid) VALUES(@steamid)";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.Parameters.AddWithValue("@steamid", steamid);
-                command.ExecuteNonQuery();
-            }
-        }
-
-        private void SQLite_Insert_Nick(SQLiteConnection connection, int playerid, string nick)
-        {
-            string sql = "INSERT INTO nicks(playerid, nick) VALUES(@playerid, @nick)";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.Parameters.AddWithValue("@playerid", playerid);
-                command.Parameters.AddWithValue("@nick", nick);
-                command.ExecuteNonQuery();
-            }
-        }
-
-        private void SQLite_Insert_Abuse(SQLiteConnection connection, int playerid, string abuse)
-        {
-            string sql = "INSERT INTO abuses(playerid, abuse) VALUES(@playerid, @abuse)";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.Parameters.AddWithValue("@playerid", playerid);
-                command.Parameters.AddWithValue("@abuse", abuse);
-                command.ExecuteNonQuery();
-            }
-        }
-
-        private void SQLite_InsertPlayer(SQLiteConnection connection, string steamid, string nick, string abuse)
-        {
-            int playerid = SQLite_Lookup_Players(connection, steamid);
-            if (playerid == -1)
-                SQLite_Insert_Steamid(connection, steamid);
-            playerid = SQLite_Lookup_Players(connection, steamid);
-            if (playerid == -1)
-            {
-                // TODO error
+                // the line does not contain a steamid, and may be empty.
+                //System.Diagnostics.Debug.WriteLine(line);
                 return;
             }
-            if(SQLite_Lookup_Nicks(connection, playerid, nick) == -1)
-                SQLite_Insert_Nick(connection, playerid, nick);
-            if (SQLite_Lookup_Abuses(connection, playerid, abuse) == -1)
-                SQLite_Insert_Abuse(connection, playerid, abuse);
+
+            string steamid = match.Groups[1].Value;
+
+            // Is it s a status line?
+            char ch = line[0];
+            if (ch == '#')
+            {
+                System.Diagnostics.Debug.WriteLine("[STAT] " + line);
+                string namepart = line.Substring(0, steamid_start);
+                System.Diagnostics.Debug.WriteLine("[NAMEPART] " + namepart);
+                int nick_start = namepart.IndexOf('"') + 1;
+                if(nick_start > 0)
+                {
+                    int nick_end = namepart.Length - nick_start - 2;
+                    if (nick_end >= nick_start)
+                    {
+                        string nick = namepart.Substring(nick_start, nick_end);
+                        System.Diagnostics.Debug.WriteLine("[NICK] " + steamid + "-> '" + nick + "'");
+                        if (!players.ContainsKey(steamid))
+                        {
+                            //System.Diagnostics.Debug.WriteLine("[ADD] " + steamid + " -> " + nick);
+                            players.Add(steamid, nick);
+                        }
+                    }
+                }
+                // Example:
+                // # 363 21 "nick" STEAM_X:Y:ZZZZZZZZZ 22:09 90 0 active 196608
+                return;
+            }
+
+            int pos_abuse = steamid_start + steamid.Length + 1;
+            string abuse = (pos_abuse < line.Length) ? line.Substring(pos_abuse).Trim(charsToTrim) : string.Empty;
+            // Is it a console command?
+            if (ch == ']')
+            {
+                System.Diagnostics.Debug.WriteLine("[ABUSE_CONSOLE" + line);
+                System.Diagnostics.Debug.WriteLine("[FOUND] " + steamid + " -> '" + abuse + "'");
+                abusers.Add(new Tuple<string, string>(steamid, abuse));
+                // Examples:
+                //
+                // "STEAM_Y:XXX:ZZZZZZZZZ
+                // STEAM_Y:XXX:ZZZZZZZZZ"
+                // "STEAM_Y:XXX:ZZZZZZZZZ"
+                // Examples with echo, although say or say_team can be used instead.
+                // echo "trollnick" STEAM_Y:XXX:ZZZZZZZZZ teamgrief
+                // echo "trollnick" "STEAM_Y:XXX:ZZZZZZZZZ teamgrief
+                // echo "trollnick" "STEAM_Y:XXX:ZZZZZZZZZ" teamgrief
+                // echo "trollnick" "STEAM_Y:XXX:ZZZZZZZZZ teamgrief"
+                // echo trollnick" STEAM_Y:XXX:ZZZZZZZZZ teamgrief
+                // echo    trollnick" STEAM_Y:XXX:ZZZZZZZZZ teamgrief
+                //
+                // I saw these two cases when testing on condumps:
+                //
+                // [ABUSE_CONSOLE] "trollnick" STEAM_1:0:134nknown command: trollnick
+                // [ABUSE_CONSOLE] "trollnick" STEAM_1: 0:134830 greif
+                //
+                // We don't want to insert the first case, because that's obviously a typo.
+                // We can ignore the first case, if we require that Z must be followed by nothing, spapce or double-quote.
+                //
+                // When we wait and only add abusers AFTER we have processed all the status lines, then we can check the
+                // previously scanned startus lines for valid steamids, and catch typos.
+
+                return;
+            }
+
+            // It's not a status line or a console command. Is it a say or say_team command?
+            // Process these AFTER all the status lines (from all the files) have been processed.
+            int pos2 = line.IndexOf(" : ");
+            if (pos2 >= 0 && pos2 < steamid_start)
+            {
+                // (Counter-Terrorist) mynick‎ @ CT Start :     "trollnick" STEAM_Y:XXX:ZZZZZZZZZ teamgrief
+                // mynick : "trollnick" STEAM_Y:XXX:ZZZZZZZZZ teamgrief
+                System.Diagnostics.Debug.WriteLine("[ABUSE_SAY] " + line);
+                System.Diagnostics.Debug.WriteLine("[FOUND] " + steamid + " -> '" + abuse + "'");
+                abusers.Add(new Tuple<string, string>(steamid, abuse));
+                return;
+            }
+
+            // We have a steamid that fails to meet our standard, a spelling mistake or the like.
+            // TODO Delete the Debug.WriteLine when we have debugged a lot of condumps
+            System.Diagnostics.Debug.WriteLine("[IGNORED] " + line);
+            return;
         }
 
-        private void SQLite_InsertPlayers(SQLiteConnection connection)
+        private void ProcessConsoleFiles(SQLiteConnection connection)
         {
             foreach (var filename in files)
             {
                 var ext = Path.GetExtension(filename).ToLower();
                 if (!ext.Equals(".txt"))
                     continue;
-                // TODO Scan the file and insert the players
+                const Int32 siz = 1024;
+                using (var stream = File.OpenRead(filename))
+                using (var reader = new StreamReader(stream, Encoding.UTF8, true, siz))
+                {
+                    String line;
+                    while ((line = reader.ReadLine()) != null)
+                        ProcessConsoleLine(connection, line);
+                }
             }
-            // TODO Remove this when we have written code for scanning the files in the foreach above.
+
+            // TODO process the collected players and abusers.
+            foreach(var tuble in abusers)
+            {
+                string steamid = tuble.Item1;
+                if (!players.ContainsKey(steamid))
+                {
+                    // TODO We can look in the db of we have the player there already.
+                    continue;
+                }
+                string abuse = tuble.Item2;
+                // TODO: Filter out abuses that stat lines like: 22:09 90 0 active 196608
+                // TODO: Remove quotes from the abuse line
+                string nick = players[steamid];
+                MySQLite.InsertPlayer(connection, steamid, nick, (abuse.Length == 0) ? "afk" : abuse);
+            }
+
+            // TODO: Insert players we have met, that don't abuse?
+
+            /*
             SQLite_InsertPlayer(connection, "steamid1", "nickname1", "afk1");
             SQLite_InsertPlayer(connection, "steamid1", "nickname1", "afk1");
             SQLite_InsertPlayer(connection, "steamid2", "nickname2", "afk2");
@@ -302,40 +270,20 @@ namespace SteamTool
             SQLite_InsertPlayer(connection, "steamid3", "nickname3", "afk2b");
             SQLite_InsertPlayer(connection, "steamid3", "nickname3", "afk3");
             SQLite_InsertPlayer(connection, "steamid3", "nickname3b", "afk3");
-        }
-
-        private void SQLite_CreateDb()
-        {
-            if (File.Exists(db_filename))
-                return;
-            SQLiteConnection.CreateFile(db_filename);
-            using (SQLiteConnection connection = new SQLiteConnection(db_connection_string))
-            {
-                connection.Open();
-                try
-                {
-                    SQLite_CreateTable_Players(connection);
-                    SQLite_CreateTable_Nicks(connection);
-                    SQlite_CreateTable_Abuses(connection);
-                }
-                finally
-                {
-                    connection.Close();
-                }
-            }
+            */
         }
 
         public void StorePlayers()
         {
             if (!CheckFilesAndOuputFolder())
                 return;
-            SQLite_CreateDb();
+            MySQLite.CreateDb(db_filename, db_connection_string);
             using (SQLiteConnection connection = new SQLiteConnection(db_connection_string))
             {
                 connection.Open();
                 try
                 {
-                    SQLite_InsertPlayers(connection);
+                    ProcessConsoleFiles(connection);
                 }
                 finally
                 {
