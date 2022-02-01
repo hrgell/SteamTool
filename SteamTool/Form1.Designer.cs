@@ -42,10 +42,10 @@
             // 
             // BtnCopy
             // 
-            this.BtnCopy.Location = new System.Drawing.Point(174, 110);
+            this.BtnCopy.Location = new System.Drawing.Point(255, 110);
             this.BtnCopy.Name = "BtnCopy";
             this.BtnCopy.Size = new System.Drawing.Size(75, 23);
-            this.BtnCopy.TabIndex = 4;
+            this.BtnCopy.TabIndex = 5;
             this.BtnCopy.Text = "Copy";
             this.BtnCopy.UseVisualStyleBackColor = true;
             this.BtnCopy.Click += new System.EventHandler(this.BtnCopy_Click);
@@ -67,8 +67,8 @@
             this.BtnCancel.Location = new System.Drawing.Point(642, 110);
             this.BtnCancel.Name = "BtnCancel";
             this.BtnCancel.Size = new System.Drawing.Size(75, 23);
-            this.BtnCancel.TabIndex = 5;
-            this.BtnCancel.Text = "Cancel";
+            this.BtnCancel.TabIndex = 6;
+            this.BtnCancel.Text = "Exit";
             this.BtnCancel.UseVisualStyleBackColor = true;
             this.BtnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
             // 
@@ -102,7 +102,7 @@
             this.TxtMessages.Name = "TxtMessages";
             this.TxtMessages.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.TxtMessages.Size = new System.Drawing.Size(705, 327);
-            this.TxtMessages.TabIndex = 6;
+            this.TxtMessages.TabIndex = 7;
             // 
             // label2
             // 
@@ -136,10 +136,10 @@
             // 
             // BtnStore
             // 
-            this.BtnStore.Location = new System.Drawing.Point(255, 110);
+            this.BtnStore.Location = new System.Drawing.Point(174, 110);
             this.BtnStore.Name = "BtnStore";
             this.BtnStore.Size = new System.Drawing.Size(75, 23);
-            this.BtnStore.TabIndex = 7;
+            this.BtnStore.TabIndex = 4;
             this.BtnStore.Text = "Store";
             this.BtnStore.UseVisualStyleBackColor = true;
             this.BtnStore.Click += new System.EventHandler(this.BtnStore_Click);
