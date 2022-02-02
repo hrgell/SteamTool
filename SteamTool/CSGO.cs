@@ -28,7 +28,8 @@ namespace SteamTool
         // These are used while processing files
         private readonly Regex rx_steamid = null;
         private readonly Dictionary<string, string> players = null;
-        private readonly List<Tuple<string, string>> abusers = null;
+        //private readonly List<Tuple<string, string>> abusers = null;
+        private readonly HashSet<Tuple<string, string>> abusers = null;
         private readonly char[] charsToTrim = { '\t', ' ', '"', ',' };
 
         public CSGO(string game_folder, string output_folder)
@@ -37,7 +38,7 @@ namespace SteamTool
             string pattern = "(STEAM_[0-9]:[0-9]+:[0-9]+)(?:[ \"]|$)";
             rx_steamid = new Regex(pattern);
             players = new Dictionary<string, string>();
-            abusers = new List<Tuple<string, string>>();
+            abusers = new HashSet<Tuple<string, string>>();
 
             this.output_folder = output_folder;
             db_filename = Path.Combine(output_folder, "playerdb.sqlite");
@@ -129,14 +130,14 @@ namespace SteamTool
             if (steamid_start == 0)
             {
                 // The line contains a steamid at the start of the line. We don't like that.
-                System.Diagnostics.Debug.WriteLine("[START_OF_LINE] " + line);
+                System.Diagnostics.Debug.WriteLine(string.Format("[START_OF_LINE] {0}", line));
                 return;
 
             }
             if (steamid_start < 0)
             {
                 // The line does not contain a steamid, and may be empty.
-                //System.Diagnostics.Debug.WriteLine(line);
+                //System.Diagnostics.Debug.WriteLine(string.Format("{0}", line));
                 return;
             }
 
@@ -146,22 +147,22 @@ namespace SteamTool
             char ch = line[0];
             if (ch == '#')
             {
-                System.Diagnostics.Debug.WriteLine("[STAT] " + line);
+                System.Diagnostics.Debug.WriteLine(string.Format("[STAT] {0}", line));
                 string namepart = line.Substring(0, steamid_start);
-                System.Diagnostics.Debug.WriteLine("[NAMEPART] " + namepart);
+                System.Diagnostics.Debug.WriteLine(string.Format("[NAMEPART] {0}", namepart));
                 int nick_start = namepart.IndexOf('"') + 1;
-                if(nick_start > 0)
+                if (nick_start > 0)
                 {
                     int nick_length = namepart.Length - nick_start - 2;
-                    if (nick_length >= nick_start)
+                    if (nick_length >= 0)
                     {
                         if (namepart[nick_start + nick_length] == '"')
                         {
                             string nick = namepart.Substring(nick_start, nick_length);
-                            System.Diagnostics.Debug.WriteLine("[NICK] " + steamid + "-> '" + nick + "'");
+                            System.Diagnostics.Debug.WriteLine(string.Format("[NICK] {0}-> '{1}'", steamid, nick));
                             if (!players.ContainsKey(steamid))
                             {
-                                //System.Diagnostics.Debug.WriteLine("[ADD] " + steamid + " -> " + nick);
+                                System.Diagnostics.Debug.WriteLine(string.Format("[ADD] {0}-> '{1}'", steamid, nick));
                                 players.Add(steamid, nick);
                             }
                         }
@@ -175,12 +176,16 @@ namespace SteamTool
             // Is it a console command?
             if (ch == ']')
             {
-                System.Diagnostics.Debug.WriteLine("[ABUSE_CONSOLE" + line);
-                System.Diagnostics.Debug.WriteLine("[FOUND] " + steamid + " -> '" + abuse + "'");
+                System.Diagnostics.Debug.WriteLine(string.Format("[ABUSE_CONSOLE] {0}", line));
+                System.Diagnostics.Debug.WriteLine(string.Format("[FOUND] {0} -> '{1}'", steamid, abuse));
                 // Filter out abuses that stat lines like: 22:09 90 0 active 196608
                 bool has_digit = abuse.Length > 0 && char.IsDigit(abuse[0]);
+                var tuple = new Tuple<string, string>(steamid, abuse);
                 if (!has_digit)
-                    abusers.Add(new Tuple<string, string>(steamid, abuse));
+                {
+                    if (!abusers.Contains(tuple))
+                        abusers.Add(tuple);
+                }
                 return;
             }
 
@@ -189,22 +194,29 @@ namespace SteamTool
             int pos2 = line.IndexOf(" : ");
             if (pos2 >= 0 && pos2 < steamid_start)
             {
-                System.Diagnostics.Debug.WriteLine("[ABUSE_SAY] " + line);
-                System.Diagnostics.Debug.WriteLine("[FOUND] " + steamid + " -> '" + abuse + "'");
+                System.Diagnostics.Debug.WriteLine(string.Format("[ABUSE_SAY] {0}", line));
+                System.Diagnostics.Debug.WriteLine(string.Format("[FOUND] {0} -> '{1}'", steamid, abuse));
                 // Filter out abuses that stat lines like: 22:09 90 0 active 196608
                 bool has_digit = abuse.Length > 0 && char.IsDigit(abuse[0]);
                 if (!has_digit)
-                    abusers.Add(new Tuple<string, string>(steamid, abuse));
+                {
+                    var tuple = new Tuple<string, string>(steamid, abuse);
+                    if (!has_digit)
+                    {
+                        if (!abusers.Contains(tuple))
+                            abusers.Add(tuple);
+                    }
+                }
                 return;
             }
 
             // We have a steamid that fails to meet our standard, a spelling mistake or the like.
             // TODO Delete the Debug.WriteLine when we have debugged a lot of condumps
-            System.Diagnostics.Debug.WriteLine("[IGNORED] " + line);
+            System.Diagnostics.Debug.WriteLine(string.Format("[IGNORED] {0}", line));
             return;
         }
 
-        private void ProcessConsoleFiles(SQLiteConnection connection)
+        private void ProcessConsoleFiles(StringBuilder buf, SQLiteConnection connection)
         {
             foreach (var filename in files)
             {
@@ -222,28 +234,53 @@ namespace SteamTool
             }
 
             // Process the collected abusers.
-            foreach(var tuble in abusers)
+            bool first = true;
+            Dictionary<string, int> dct = new Dictionary<string, int>();
+            foreach (var tuble in abusers)
             {
+                bool store = false;
                 string steamid = tuble.Item1;
-                string abuse = tuble.Item2;
-                if (!players.ContainsKey(steamid))
+                string nick = string.Empty;
+                string abuse = (tuble.Item2.Length == 0) ? "afk" : tuble.Item2;
+                bool hasstat = players.ContainsKey(steamid);
+                if (!hasstat)
                 {
                     // Check if the player is in the db already.
                     int playerid = MySQLite.Lookup_Players(connection, steamid);
                     if (playerid != -1)
                     {
                         if (MySQLite.Lookup_Abuses(connection, playerid, abuse) == -1)
-                            MySQLite.Insert_Abuse(connection, playerid, abuse);
+                        {
+                            store = true;
+                        }
                     }
-                    continue;
+                    else
+                    {
+                        // TODO Store the line in a table of players could not store normally.
+                    }
                 }
-                string nick = players[steamid];
-                MySQLite.InsertPlayer(connection, steamid, nick, (abuse.Length == 0) ? "afk" : abuse);
+                else
+                {
+                    store = true;
+                    nick = players[steamid];
+                }
+                if (first)
+                {
+                    first = false;
+                    buf.WriteLine("Stats/Store: \"nick\": steamid -> abuse");
+                    buf.WriteLine("-------------------------------------------------------------");
+
+                }
+                buf.WriteLine("{0}/{1}: \"{2}\": {3} -> {4}", hasstat, store, nick, steamid, abuse);
+                if (store)
+                {
+                    MySQLite.InsertPlayer(connection, steamid, nick, abuse);
+                }
             }
             // TODO Insert players we have met, that don't abuse?
         }
 
-        public void StorePlayers()
+        public void StorePlayers(StringBuilder buf)
         {
             if (!CheckFilesAndOuputFolder())
                 return;
@@ -253,7 +290,7 @@ namespace SteamTool
                 connection.Open();
                 try
                 {
-                    ProcessConsoleFiles(connection);
+                    ProcessConsoleFiles(buf, connection);
                 }
                 finally
                 {

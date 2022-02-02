@@ -53,7 +53,7 @@ namespace SteamTool
             buf.WriteLine("{0}{1}", "Next demo number: ", csgo.maxnum + 1);
             if (options.dostore)
             {
-                csgo.StorePlayers();
+                csgo.StorePlayers(buf);
                 buf.WriteLine("Stored players.");
             }
             if (options.docopy)
