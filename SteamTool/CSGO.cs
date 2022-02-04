@@ -29,7 +29,7 @@ namespace SteamTool
         private readonly Regex rx_steamid = null;
         private readonly Dictionary<string, string> players = null;
         //private readonly List<Tuple<string, string>> abusers = null;
-        private readonly HashSet<Tuple<string, string>> abusers = null;
+        private readonly HashSet<Tuple<string, string, string>> abusers = null;
         private readonly char[] charsToTrim = { '\t', ' ', '"', ',' };
 
         public CSGO(string game_folder, string output_folder)
@@ -38,7 +38,7 @@ namespace SteamTool
             string pattern = "(STEAM_[0-9]:[0-9]+:[0-9]+)(?:[ \"]|$)";
             rx_steamid = new Regex(pattern);
             players = new Dictionary<string, string>();
-            abusers = new HashSet<Tuple<string, string>>();
+            abusers = new HashSet<Tuple<string, string, string>>();
 
             this.output_folder = output_folder;
             db_filename = Path.Combine(output_folder, "playerdb.sqlite");
@@ -115,7 +115,7 @@ namespace SteamTool
             return true;
         }
 
-        private void ProcessConsoleLine(SQLiteConnection connection, string line)
+        private void ProcessConsoleLine(string line)
         {
             if (string.IsNullOrEmpty(line))
                 return;
@@ -178,10 +178,9 @@ namespace SteamTool
             {
                 System.Diagnostics.Debug.WriteLine(string.Format("[ABUSE_CONSOLE] {0}", line));
                 System.Diagnostics.Debug.WriteLine(string.Format("[FOUND] {0} -> '{1}'", steamid, abuse));
-                // Filter out abuses that stat lines like: 22:09 90 0 active 196608
-                bool has_digit = abuse.Length > 0 && char.IsDigit(abuse[0]);
-                var tuple = new Tuple<string, string>(steamid, abuse);
-                if (!has_digit)
+                var tuple = new Tuple<string, string, string>(steamid, abuse, line);
+                // Filter out abuses that stat lines that start with a digit, like: 22:09 90 0 active 196608
+                if (abuse.Length == 0 || !char.IsDigit(abuse[0]))
                 {
                     if (!abusers.Contains(tuple))
                         abusers.Add(tuple);
@@ -194,18 +193,14 @@ namespace SteamTool
             int pos2 = line.IndexOf(" : ");
             if (pos2 >= 0 && pos2 < steamid_start)
             {
-                System.Diagnostics.Debug.WriteLine(string.Format("[ABUSE_SAY] {0}", line));
-                System.Diagnostics.Debug.WriteLine(string.Format("[FOUND] {0} -> '{1}'", steamid, abuse));
+                //System.Diagnostics.Debug.WriteLine(string.Format("[ABUSE_SAY] {0}", line));
+                //System.Diagnostics.Debug.WriteLine(string.Format("[FOUND] {0} -> '{1}'", steamid, abuse));
                 // Filter out abuses that stat lines like: 22:09 90 0 active 196608
-                bool has_digit = abuse.Length > 0 && char.IsDigit(abuse[0]);
-                if (!has_digit)
+                if (abuse.Length == 0 || !char.IsDigit(abuse[0]))
                 {
-                    var tuple = new Tuple<string, string>(steamid, abuse);
-                    if (!has_digit)
-                    {
-                        if (!abusers.Contains(tuple))
-                            abusers.Add(tuple);
-                    }
+                    var tuple = new Tuple<string, string, string>(steamid, abuse, line);
+                    if (!abusers.Contains(tuple))
+                        abusers.Add(tuple);
                 }
                 return;
             }
@@ -229,13 +224,13 @@ namespace SteamTool
                 {
                     String line;
                     while ((line = reader.ReadLine()) != null)
-                        ProcessConsoleLine(connection, line);
+                        ProcessConsoleLine(line);
                 }
             }
 
             // Process the collected abusers.
             bool first = true;
-            Dictionary<string, int> dct = new Dictionary<string, int>();
+            //Dictionary<string, int> dct = new Dictionary<string, int>();
             foreach (var tuble in abusers)
             {
                 bool store = false;
@@ -243,6 +238,7 @@ namespace SteamTool
                 string nick = string.Empty;
                 string abuse = (tuble.Item2.Length == 0) ? "afk" : tuble.Item2;
                 bool hasstat = players.ContainsKey(steamid);
+                bool failed = false;
                 if (!hasstat)
                 {
                     // Check if the player is in the db already.
@@ -257,6 +253,9 @@ namespace SteamTool
                     else
                     {
                         // TODO Store the line in a table of players could not store normally.
+                        MySQLite.Insert_Fail(connection, steamid, tuble.Item3);
+                        buf.WriteLine("[Failed] \"{0}\": {1} -> {2}", nick, steamid, abuse);
+                        failed = true;
                     }
                 }
                 else
@@ -271,7 +270,8 @@ namespace SteamTool
                     buf.WriteLine("-------------------------------------------------------------");
 
                 }
-                buf.WriteLine("{0}/{1}: \"{2}\": {3} -> {4}", hasstat, store, nick, steamid, abuse);
+                if(!failed)
+                    buf.WriteLine("{0}/{1}: \"{2}\": {3} -> {4}", hasstat, store, nick, steamid, abuse);
                 if (store)
                 {
                     MySQLite.InsertPlayer(connection, steamid, nick, abuse);

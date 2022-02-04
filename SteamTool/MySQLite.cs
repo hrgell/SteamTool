@@ -23,6 +23,7 @@ namespace SteamTool
                     CreateTable_Players(connection);
                     CreateTable_Nicks(connection);
                     CreateTable_Abuses(connection);
+                    CreateTable_Fails(connection);
                 }
                 finally
                 {
@@ -114,6 +115,20 @@ namespace SteamTool
             }
         }
 
+        public static void CreateTable_Fails(SQLiteConnection connection)
+        {
+            string sql = "create table unknowns (id INTEGER PRIMARY KEY AUTOINCREMENT, steamid varchar(80) NOT NULL, msg varchar(1000) NOT NULL)";
+            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+            {
+                command.ExecuteNonQuery();
+            }
+            sql = "CREATE INDEX idx_unknowns_steamid ON unknowns(steamid)";
+            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+            {
+                command.ExecuteNonQuery();
+            }
+        }
+
         public static int Lookup_Players(SQLiteConnection connection, string steamid)
         {
             int id = -1;
@@ -195,6 +210,17 @@ namespace SteamTool
             {
                 command.Parameters.AddWithValue("@playerid", playerid);
                 command.Parameters.AddWithValue("@abuse", abuse);
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public static void Insert_Fail(SQLiteConnection connection, string steamid, string msg)
+        {
+            string sql = "INSERT INTO unknowns(steamid, msg) VALUES(@steamid, @msg)";
+            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+            {
+                command.Parameters.AddWithValue("@steamid", steamid);
+                command.Parameters.AddWithValue("@msg", msg);
                 command.ExecuteNonQuery();
             }
         }

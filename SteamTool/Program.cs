@@ -7,27 +7,31 @@ namespace SteamTool
 {
     static class Program
     {
+        static Form1 frm = null;
+
         [STAThread]
         static void Main(string[] args)
         {
+            
             StringBuilder buf = null;
             if (args.Length > 0)
-                buf = DoMyTask(args);
+                buf = Doit(args);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Form1 frm = new Form1();
+            frm = new Form1();
             if (buf != null)
                 frm.SetMessages(buf.ToString());
             Application.Run(frm);
         } // Main()
 
-        public static StringBuilder DoMyTask(string[] args)
+        public static StringBuilder Doit(string[] args)
         {
             Arguments options = new Arguments(args);
-            return ProcessCSGO(options);
+            var rst = DoCSGO(options);
+            return rst;
         } // method
 
-        public static StringBuilder ProcessCSGO(Arguments options)
+        public static StringBuilder DoCSGO(Arguments options)
         {
             StringBuilder buf = new StringBuilder();
             Steam steam = new Steam();
@@ -39,18 +43,18 @@ namespace SteamTool
             string game_name = manifest.Get("AppState", "name");
             if (!Directory.Exists(game_folder))
                 throw new Exception(string.Format("Folder does not exist: {0}", game_folder));
-            buf.WriteLine("Appid {0}", appid);
-            buf.WriteLine(game_name);
+            buf.WriteLine("Appid {0}: {1}", appid, game_name);
             buf.WriteLine(game_folder);
             //manifest.ToStringBuilder(buf);
             CSGO csgo = new CSGO(game_folder, options.output_folder);
-            if (options.docfg)
-            {
-                buf.WriteLine("Created Script:");
-                buf.Write(csgo.CreateRecordScript().ToString());
-            }
             buf.WriteLine("{0}{1}", "Files found: ", csgo.files.Count);
             buf.WriteLine("{0}{1}", "Next demo number: ", csgo.maxnum + 1);
+            if (options.docfg)
+            {
+                //buf.Write(csgo.CreateRecordScript().ToString());
+                csgo.CreateRecordScript();
+                buf.WriteLine("Record script created.");
+            }
             if (options.dostore)
             {
                 csgo.StorePlayers(buf);

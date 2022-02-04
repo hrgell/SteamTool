@@ -26,15 +26,24 @@ namespace SteamTool
                 return;
             }
             string[] args = { "-c", output_folder };
-            StringBuilder buf = Program.DoMyTask(args);
+            StringBuilder buf = Program.Doit(args);
             TxtMessages.Text = buf.ToString();
+            ScrollToBottom();
         } // method
+
+        internal void ScrollToBottom()
+        {
+            TxtMessages.SelectionStart = TxtMessages.Text.Length;
+            TxtMessages.SelectionLength = 0;
+            TxtMessages.ScrollToCaret();
+        }
 
         private void BtnCfg_Click(object sender, EventArgs e)
         {
             string[] args = { "-r" };
-            StringBuilder buf = Program.DoMyTask(args);
+            StringBuilder buf = Program.Doit(args);
             TxtMessages.Text = buf.ToString();
+            ScrollToBottom();
         } // method
 
         private void BtnCancel_Click(object sender, EventArgs e)
@@ -45,8 +54,9 @@ namespace SteamTool
         private void BtnTest_Click(object sender, EventArgs e)
         {
             string[] args = { };
-            StringBuilder buf = Program.DoMyTask(args);
+            StringBuilder buf = Program.Doit(args);
             TxtMessages.Text = buf.ToString();
+            ScrollToBottom();
         } // method
 
         private void BtnOutputFolder_Click(object sender, EventArgs e)
@@ -78,8 +88,10 @@ namespace SteamTool
                 return;
             }
             string[] args = { "-s", output_folder };
-            StringBuilder buf = Program.DoMyTask(args);
+            StringBuilder buf = Program.Doit(args);
             TxtMessages.Text = buf.ToString();
+            ScrollToBottom();
         }
+
     } // class
 } // namespace
