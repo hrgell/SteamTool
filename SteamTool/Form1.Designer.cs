@@ -88,7 +88,7 @@
             this.TxtMessages.Multiline = true;
             this.TxtMessages.Name = "TxtMessages";
             this.TxtMessages.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.TxtMessages.Size = new System.Drawing.Size(611, 574);
+            this.TxtMessages.Size = new System.Drawing.Size(611, 555);
             this.TxtMessages.TabIndex = 7;
             // 
             // TxtOutputFolder
@@ -105,7 +105,7 @@
             this.BtnOutputFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BtnOutputFolder.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
             this.BtnOutputFolder.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.BtnOutputFolder.Location = new System.Drawing.Point(645, 34);
+            this.BtnOutputFolder.Location = new System.Drawing.Point(645, 35);
             this.BtnOutputFolder.Name = "BtnOutputFolder";
             this.BtnOutputFolder.Size = new System.Drawing.Size(75, 23);
             this.BtnOutputFolder.TabIndex = 1;
@@ -132,7 +132,7 @@
             this.BtnExit.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
             this.BtnExit.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.BtnExit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.BtnExit.Location = new System.Drawing.Point(645, 652);
+            this.BtnExit.Location = new System.Drawing.Point(645, 633);
             this.BtnExit.Name = "BtnExit";
             this.BtnExit.Size = new System.Drawing.Size(75, 23);
             this.BtnExit.TabIndex = 2;
@@ -166,7 +166,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.CancelButton = this.BtnExit;
-            this.ClientSize = new System.Drawing.Size(736, 687);
+            this.ClientSize = new System.Drawing.Size(736, 678);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.LblBackupFolder);
             this.Controls.Add(this.BtnOutputFolder);
