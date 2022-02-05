@@ -35,16 +35,17 @@
             this.TxtOutputFolder = new System.Windows.Forms.TextBox();
             this.BtnOutputFolder = new System.Windows.Forms.Button();
             this.BtnStore = new System.Windows.Forms.Button();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.BtnExit = new System.Windows.Forms.Button();
-            this.groupBox1.SuspendLayout();
+            this.LblBackupFolder = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // BtnCopy
             // 
+            this.BtnCopy.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BtnCopy.BackColor = System.Drawing.Color.LightCoral;
             this.BtnCopy.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.BtnCopy.Location = new System.Drawing.Point(255, 139);
+            this.BtnCopy.Location = new System.Drawing.Point(645, 188);
             this.BtnCopy.Name = "BtnCopy";
             this.BtnCopy.Size = new System.Drawing.Size(75, 23);
             this.BtnCopy.TabIndex = 5;
@@ -54,9 +55,10 @@
             // 
             // BtnCfg
             // 
-            this.BtnCfg.BackColor = System.Drawing.Color.PaleGreen;
+            this.BtnCfg.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.BtnCfg.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
             this.BtnCfg.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.BtnCfg.Location = new System.Drawing.Point(93, 139);
+            this.BtnCfg.Location = new System.Drawing.Point(645, 130);
             this.BtnCfg.Name = "BtnCfg";
             this.BtnCfg.Size = new System.Drawing.Size(75, 23);
             this.BtnCfg.TabIndex = 3;
@@ -66,9 +68,10 @@
             // 
             // BtnTest
             // 
-            this.BtnTest.BackColor = System.Drawing.Color.PaleGreen;
+            this.BtnTest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.BtnTest.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
             this.BtnTest.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.BtnTest.Location = new System.Drawing.Point(12, 139);
+            this.BtnTest.Location = new System.Drawing.Point(645, 101);
             this.BtnTest.Name = "BtnTest";
             this.BtnTest.Size = new System.Drawing.Size(75, 23);
             this.BtnTest.TabIndex = 2;
@@ -81,20 +84,20 @@
             this.TxtMessages.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.TxtMessages.Location = new System.Drawing.Point(12, 168);
+            this.TxtMessages.Location = new System.Drawing.Point(15, 101);
             this.TxtMessages.Multiline = true;
             this.TxtMessages.Name = "TxtMessages";
             this.TxtMessages.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.TxtMessages.Size = new System.Drawing.Size(705, 507);
+            this.TxtMessages.Size = new System.Drawing.Size(611, 574);
             this.TxtMessages.TabIndex = 7;
             // 
             // TxtOutputFolder
             // 
             this.TxtOutputFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.TxtOutputFolder.Location = new System.Drawing.Point(12, 38);
+            this.TxtOutputFolder.Location = new System.Drawing.Point(15, 37);
             this.TxtOutputFolder.Name = "TxtOutputFolder";
-            this.TxtOutputFolder.Size = new System.Drawing.Size(598, 20);
+            this.TxtOutputFolder.Size = new System.Drawing.Size(611, 20);
             this.TxtOutputFolder.TabIndex = 0;
             // 
             // BtnOutputFolder
@@ -102,7 +105,7 @@
             this.BtnOutputFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BtnOutputFolder.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
             this.BtnOutputFolder.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.BtnOutputFolder.Location = new System.Drawing.Point(616, 35);
+            this.BtnOutputFolder.Location = new System.Drawing.Point(645, 34);
             this.BtnOutputFolder.Name = "BtnOutputFolder";
             this.BtnOutputFolder.Size = new System.Drawing.Size(75, 23);
             this.BtnOutputFolder.TabIndex = 1;
@@ -112,9 +115,10 @@
             // 
             // BtnStore
             // 
-            this.BtnStore.BackColor = System.Drawing.Color.PaleGreen;
+            this.BtnStore.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.BtnStore.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
             this.BtnStore.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.BtnStore.Location = new System.Drawing.Point(174, 139);
+            this.BtnStore.Location = new System.Drawing.Point(645, 159);
             this.BtnStore.Name = "BtnStore";
             this.BtnStore.Size = new System.Drawing.Size(75, 23);
             this.BtnStore.TabIndex = 4;
@@ -122,26 +126,13 @@
             this.BtnStore.UseVisualStyleBackColor = false;
             this.BtnStore.Click += new System.EventHandler(this.BtnStore_Click);
             // 
-            // groupBox1
-            // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox1.Controls.Add(this.BtnOutputFolder);
-            this.groupBox1.Controls.Add(this.TxtOutputFolder);
-            this.groupBox1.Location = new System.Drawing.Point(12, 12);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(705, 77);
-            this.groupBox1.TabIndex = 8;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Backup Folder";
-            // 
             // BtnExit
             // 
-            this.BtnExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.BtnExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.BtnExit.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
             this.BtnExit.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.BtnExit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.BtnExit.Location = new System.Drawing.Point(628, 139);
+            this.BtnExit.Location = new System.Drawing.Point(645, 652);
             this.BtnExit.Name = "BtnExit";
             this.BtnExit.Size = new System.Drawing.Size(75, 23);
             this.BtnExit.TabIndex = 2;
@@ -149,15 +140,38 @@
             this.BtnExit.UseVisualStyleBackColor = false;
             this.BtnExit.Click += new System.EventHandler(this.BtnCancel_Click);
             // 
+            // LblBackupFolder
+            // 
+            this.LblBackupFolder.AutoSize = true;
+            this.LblBackupFolder.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblBackupFolder.Location = new System.Drawing.Point(12, 21);
+            this.LblBackupFolder.Name = "LblBackupFolder";
+            this.LblBackupFolder.Size = new System.Drawing.Size(89, 13);
+            this.LblBackupFolder.TabIndex = 8;
+            this.LblBackupFolder.Text = "Backup Folder";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Location = new System.Drawing.Point(12, 85);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(28, 13);
+            this.label1.TabIndex = 9;
+            this.label1.Text = "Log";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.CancelButton = this.BtnExit;
-            this.ClientSize = new System.Drawing.Size(729, 687);
+            this.ClientSize = new System.Drawing.Size(736, 687);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.LblBackupFolder);
+            this.Controls.Add(this.BtnOutputFolder);
             this.Controls.Add(this.BtnExit);
-            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.TxtOutputFolder);
             this.Controls.Add(this.BtnStore);
             this.Controls.Add(this.TxtMessages);
             this.Controls.Add(this.BtnTest);
@@ -167,8 +181,6 @@
             this.Name = "Form1";
             this.Text = "Steam Tool";
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -183,8 +195,9 @@
         private System.Windows.Forms.TextBox TxtOutputFolder;
         private System.Windows.Forms.Button BtnOutputFolder;
         private System.Windows.Forms.Button BtnStore;
-        private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button BtnExit;
+        private System.Windows.Forms.Label LblBackupFolder;
+        private System.Windows.Forms.Label label1;
     }
 }
 
