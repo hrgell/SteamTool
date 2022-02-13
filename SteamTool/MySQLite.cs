@@ -10,7 +10,7 @@ namespace SteamTool
 {
     public class MySQLite
     {
-        public static void CreateDb(string db_filename, string db_connection_string)
+        public static void EnsureDatabaseCreated(string db_filename, string db_connection_string)
         {
             if (File.Exists(db_filename))
                 return;

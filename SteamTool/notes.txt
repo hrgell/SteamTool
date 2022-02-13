@@ -1,4 +1,11 @@
 ﻿--------------------------------------------------------------------------------
+TODO Extra button: Store backup folder (instead of csgo folder) in a cancelable
+job that inserts condumps of the sub folders.
+--------------------------------------------------------------------------------
+TODO Store images.
+--------------------------------------------------------------------------------
+TODO Store demos.
+--------------------------------------------------------------------------------
 TODO Insert reference to documentation for how to find the csgo app and how to
 unpack the valve init files.
 --------------------------------------------------------------------------------

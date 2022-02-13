@@ -32,12 +32,13 @@
             this.BtnCfg = new System.Windows.Forms.Button();
             this.BtnTest = new System.Windows.Forms.Button();
             this.TxtMessages = new System.Windows.Forms.TextBox();
-            this.TxtOutputFolder = new System.Windows.Forms.TextBox();
+            this.TxtBackupFolder = new System.Windows.Forms.TextBox();
             this.BtnOutputFolder = new System.Windows.Forms.Button();
             this.BtnStore = new System.Windows.Forms.Button();
             this.BtnExit = new System.Windows.Forms.Button();
             this.LblBackupFolder = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.BtnStoreArchive = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // BtnCopy
@@ -91,14 +92,14 @@
             this.TxtMessages.Size = new System.Drawing.Size(611, 555);
             this.TxtMessages.TabIndex = 7;
             // 
-            // TxtOutputFolder
+            // TxtBackupFolder
             // 
-            this.TxtOutputFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.TxtBackupFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.TxtOutputFolder.Location = new System.Drawing.Point(15, 37);
-            this.TxtOutputFolder.Name = "TxtOutputFolder";
-            this.TxtOutputFolder.Size = new System.Drawing.Size(611, 20);
-            this.TxtOutputFolder.TabIndex = 0;
+            this.TxtBackupFolder.Location = new System.Drawing.Point(15, 37);
+            this.TxtBackupFolder.Name = "TxtBackupFolder";
+            this.TxtBackupFolder.Size = new System.Drawing.Size(611, 20);
+            this.TxtBackupFolder.TabIndex = 0;
             // 
             // BtnOutputFolder
             // 
@@ -138,7 +139,7 @@
             this.BtnExit.TabIndex = 2;
             this.BtnExit.Text = "Exit";
             this.BtnExit.UseVisualStyleBackColor = false;
-            this.BtnExit.Click += new System.EventHandler(this.BtnCancel_Click);
+            this.BtnExit.Click += new System.EventHandler(this.BtnExit_Click);
             // 
             // LblBackupFolder
             // 
@@ -160,6 +161,19 @@
             this.label1.TabIndex = 9;
             this.label1.Text = "Log";
             // 
+            // BtnStoreArchive
+            // 
+            this.BtnStoreArchive.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.BtnStoreArchive.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            this.BtnStoreArchive.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BtnStoreArchive.Location = new System.Drawing.Point(645, 217);
+            this.BtnStoreArchive.Name = "BtnStoreArchive";
+            this.BtnStoreArchive.Size = new System.Drawing.Size(75, 23);
+            this.BtnStoreArchive.TabIndex = 10;
+            this.BtnStoreArchive.Text = "Store Arc";
+            this.BtnStoreArchive.UseVisualStyleBackColor = false;
+            this.BtnStoreArchive.Click += new System.EventHandler(this.BtnStoreArchive_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -167,11 +181,12 @@
             this.BackColor = System.Drawing.Color.White;
             this.CancelButton = this.BtnExit;
             this.ClientSize = new System.Drawing.Size(736, 678);
+            this.Controls.Add(this.BtnStoreArchive);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.LblBackupFolder);
             this.Controls.Add(this.BtnOutputFolder);
             this.Controls.Add(this.BtnExit);
-            this.Controls.Add(this.TxtOutputFolder);
+            this.Controls.Add(this.TxtBackupFolder);
             this.Controls.Add(this.BtnStore);
             this.Controls.Add(this.TxtMessages);
             this.Controls.Add(this.BtnTest);
@@ -192,12 +207,13 @@
         private System.Windows.Forms.Button BtnCfg;
         private System.Windows.Forms.Button BtnTest;
         private System.Windows.Forms.TextBox TxtMessages;
-        private System.Windows.Forms.TextBox TxtOutputFolder;
+        private System.Windows.Forms.TextBox TxtBackupFolder;
         private System.Windows.Forms.Button BtnOutputFolder;
         private System.Windows.Forms.Button BtnStore;
         private System.Windows.Forms.Button BtnExit;
         private System.Windows.Forms.Label LblBackupFolder;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button BtnStoreArchive;
     }
 }
 

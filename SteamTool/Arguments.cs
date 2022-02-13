@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.Win32;
 
@@ -6,50 +7,54 @@ namespace SteamTool
 {
     public class Arguments
     {
-        public string output_folder = string.Empty;
+        public string folder = string.Empty;
+        public bool dostorebackup = false;
         public bool docopy = false;
+        public bool domove = false;
         public bool docfg = false;
         public bool dostore = false;
+        public List<string> filenames = new List<string>();
 
         public Arguments(string[] args)
         {
-            bool sawoutput = false;
+            string usage = string.Format("Usage: {0} [-b] [-c] [-m] [-r] [-s] folder [filenames...]", AppDomain.CurrentDomain.FriendlyName);
+            bool sawfolder = false;
             foreach (string arg in args) {
                 if (arg.Length == 0)
-                {
-                    if (sawoutput)
-                        throw new Exception("Too many command line options.");
-                    sawoutput = true;
-                    continue;
-                }
+                    throw new Exception("Empty command line argument is not allowed.");
                 if (arg[0] != '-')
                 {
-                    if (sawoutput)
-                        throw new Exception("Too many command line options.");
-                    sawoutput = true;
-                    output_folder = arg;
+                    if (sawfolder)
+                        filenames.Add(arg);
+                    else
+                        folder = arg;
+                    sawfolder = true;
                     continue;
                 }
                 if (arg.Length == 1)
                     throw new Exception("A command line option must not be empty.");
                 foreach (char ch in arg.Substring(1))
                 {
-                    if (ch == 'c')
+                    if (ch == 'b')
+                        dostorebackup = true;
+                    else if (ch == 'c')
                         docopy = true;
+                    else if (ch == 'm')
+                        domove = true;
                     else if (ch == 'r')
                         docfg = true;
                     else if (ch == 's')
                         dostore = true;
                     else if (ch == '?' || ch == 'h' || ch == '-')
-                        throw new Exception(string.Format("Usage: {0} [-c] [-r] [outputfolder]", AppDomain.CurrentDomain.FriendlyName));
+                        throw new Exception($"{usage}");
                     else
-                        throw new Exception(string.Format("Unknown command line option -{0}.", ch));
+                        throw new Exception($"{usage}: Unknown command line option -{ch}.");
                 }
             } // foreach command line argument
 
             // Normalize the output path name
-            if (output_folder.Length > 0)
-                output_folder = Path.GetFullPath(output_folder);
+            if (folder.Length > 0)
+                folder = Path.GetFullPath(folder);
         } // method
     } // class
 }
