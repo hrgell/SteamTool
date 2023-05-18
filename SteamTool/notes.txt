@@ -1,13 +1,11 @@
 ﻿--------------------------------------------------------------------------------
-TODO Extra button: Store backup folder (instead of csgo folder) in a cancelable
-job that inserts condumps of the sub folders.
+TODO Forgot to insert references to the documentation, for the Valve Init File format, when I implemented VifEntry.cs and VifToken.cs. Re-Find the references.
 --------------------------------------------------------------------------------
-TODO Store images.
+TODO Make backup cancelable.
 --------------------------------------------------------------------------------
-TODO Store demos.
+TODO Store images. Scan.
 --------------------------------------------------------------------------------
-TODO Insert reference to documentation for how to find the csgo app and how to
-unpack the valve init files.
+TODO Store demos. Scan.
 --------------------------------------------------------------------------------
 https://developer.valvesoftware.com/wiki/SteamID#As_Represented_Textually
 SteamIDs follow a fairly simple format when represented textually:

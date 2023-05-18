@@ -85,7 +85,7 @@ namespace SteamTool
             string output_folder = TxtBackupFolder.Text;
             if (output_folder.Length == 0)
             {
-                MessageBox.Show("You must select an output folder.", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("You must select a backup folder.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             string[] args = { "-s", output_folder };
@@ -98,36 +98,23 @@ namespace SteamTool
         {
             var txtLog = new StringBuilder();
             string root = TxtBackupFolder.Text;
-            bool exists = Directory.Exists(root);
-            string[] folders = { };
-            if (!exists)
-            {
-                TxtMessages.Text = "Error: The backup folder does not exist.";
+            string[] folders = FormSelectFolders.GetSubDirectories(root);
+            txtLog.WriteLine($"Found {folders.Length} sub folders.");
+            if (folders.Length == 0)
                 return;
-            }
-            try
-            {
-                folders = Directory.GetDirectories(root, "*", SearchOption.TopDirectoryOnly);
-            }
-            catch (Exception ex)
-            {
-                txtLog.WriteLine("Error: Failed to read the backup folder: {0}", ex.ToString());
-                return;
-            }
-
-            txtLog.WriteLine("The number of files is {0}.", folders.Length);
             using (var frm = new FormSelectFolders())
             {
                 frm.Height = this.Height;
                 frm.Width = this.Width;
                 frm.StartPosition = FormStartPosition.CenterParent;
+                // Use frm.ScanRoot(root) when re-loading
                 frm.AddFilenames(folders);
                 //MessageBox.Show("Press Ok.", "DEBUG", MessageBoxButtons.OK);
                 frm.ShowDialog(this);
-                txtLog.WriteLine("Selected Files: {0}", frm.SelectedFileNames.Count);
-                if (frm.Status)
+                int cnt = frm.SelectedFileNames.Count;
+                txtLog.WriteLine($"Found {cnt} selected files.");
+                if (frm.Status && cnt > 0)
                 {
-                    // TODO Insert the selected file names into the database
                     string[] args = { "-b", root };
                     Arguments options = new Arguments(args);
                     options.filenames = frm.SelectedFileNames;

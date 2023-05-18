@@ -49,5 +49,24 @@ namespace SteamTool
                 return default_value;
             }
         }
+
+        public static void SetFolder(string folder)
+        {
+            try { Registry.SetValue(root_key, "Folder", folder, RegistryValueKind.String); } catch { }
+        }
+
+        public static string GetFolder()
+        {
+            try
+            {
+                var result = Registry.GetValue(root_key, "Folder", string.Empty);
+                if (result != null)
+                    return result as string;
+            }
+            catch
+            {
+            }
+            return string.Empty;
+        }
     } // class MyRegistry
 } // namespace

@@ -24,22 +24,23 @@ namespace SteamTool
         public FormSelectFolders()
         {
             InitializeComponent();
-            var lv = LsvFolders;
-            lv.View = View.Details;
-            lv.FullRowSelect = true;
-            lv.GridLines = true;
-            lv.Sorting = SortOrder.Ascending;
+            //var lv = LsvFolders;
+            //lv.View = View.Details;
+            //lv.FullRowSelect = true;
+            //lv.LabelEdit = true;
+            //lv.GridLines = true;
+            //lv.Sorting = SortOrder.Ascending;
 
             // Create columns for the items and subitems. Width of -2 indicates auto-size.
-            lv.Columns.Add("Folder", -2, HorizontalAlignment.Left);
-            lv.Columns.Add("Count", -2, HorizontalAlignment.Right);
-            lv.Columns.Add("Path", -2, HorizontalAlignment.Left);
+            //lv.Columns.Add("Folder", -2, HorizontalAlignment.Left);
+            //lv.Columns.Add("Count", -2, HorizontalAlignment.Right);
+            //lv.Columns.Add("Path", -2, HorizontalAlignment.Left);
         }
 
         private void BtnExit_Click(object sender, EventArgs e)
         {
             Status = false;
-            SelectedFileNames.Clear();
+            SelectedFileNames = new List<string>();
             Close();
         }
 
@@ -76,13 +77,33 @@ namespace SteamTool
         // Remember the selected files
         public void RememberSelectedFilenames()
         {
-            SelectedFileNames.Clear();
+            SelectedFileNames = new List<string>();
             foreach (ListViewItem item in LsvFolders.SelectedItems)
             {
                 var subitem = item.SubItems[2];
                 SelectedFileNames.Add(subitem.Text);
             }
             //Debug.WriteLine("-- Remember {0}", SelectedFileNames.Count);
+        }
+
+        public void ScanRoot(string root)
+        {
+            LsvFolders.Items.Clear();
+            SelectedFileNames = new List<string>();
+            string[] folders = GetSubDirectories(root);
+            if (folders.Length > 0)
+                AddFilenames(folders);
+        }
+
+        public static string[] GetSubDirectories(string root)
+        {
+            string[] folders = { };
+            if (Directory.Exists(root))
+            {
+                try { folders = Directory.GetDirectories(root, "*", SearchOption.TopDirectoryOnly); }
+                catch { }
+            }
+            return folders;
         }
     } // class
 } // namespace

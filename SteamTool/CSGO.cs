@@ -210,7 +210,7 @@ namespace SteamTool
                 if (debug) buf.WriteLine("[FOUND] {0} -> '{1}'", steamid, abuse);
                 var tuple = new Tuple<string, string, string>(steamid, abuse, line);
                 // Filter out abuses that stat lines that start with a digit, like: 22:09 90 0 active 196608
-                if (abuse.Length == 0 || !char.IsDigit(abuse[0]))
+                if (abuse.Length == 0 || !(char.IsDigit(abuse[0]) || abuse.Contains(':')))
                 {
                     if (!abusers.Contains(tuple))
                         abusers.Add(tuple);
@@ -226,8 +226,8 @@ namespace SteamTool
                 //if (debug) buf.WriteLine("[ABUSE_SAY] {0}", line);
                 //if (debug) buf.WriteLine("[FOUND] {0} -> '{1}'", steamid, abuse);
                 // Filter out abuses that stat lines like: 22:09 90 0 active 196608
-                if (abuse.Length == 0 || !char.IsDigit(abuse[0]))
-                {
+                if (abuse.Length == 0 || !(char.IsDigit(abuse[0]) || abuse.Contains(':')))
+                    {
                     var tuple = new Tuple<string, string, string>(steamid, abuse, line);
                     if (!abusers.Contains(tuple))
                         abusers.Add(tuple);

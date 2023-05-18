@@ -32,6 +32,9 @@ namespace SteamTool
             this.BtnExit = new System.Windows.Forms.Button();
             this.BtnOk = new System.Windows.Forms.Button();
             this.LsvFolders = new System.Windows.Forms.ListView();
+            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.SuspendLayout();
             // 
             // BtnExit
@@ -67,12 +70,35 @@ namespace SteamTool
             this.LsvFolders.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.LsvFolders.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader1,
+            this.columnHeader2,
+            this.columnHeader3});
+            this.LsvFolders.FullRowSelect = true;
             this.LsvFolders.HideSelection = false;
             this.LsvFolders.Location = new System.Drawing.Point(12, 12);
             this.LsvFolders.Name = "LsvFolders";
             this.LsvFolders.Size = new System.Drawing.Size(733, 433);
+            this.LsvFolders.Sorting = System.Windows.Forms.SortOrder.Ascending;
             this.LsvFolders.TabIndex = 5;
             this.LsvFolders.UseCompatibleStateImageBehavior = false;
+            this.LsvFolders.View = System.Windows.Forms.View.Details;
+            // 
+            // columnHeader1
+            // 
+            this.columnHeader1.Text = "Folder";
+            this.columnHeader1.Width = -2;
+            // 
+            // columnHeader2
+            // 
+            this.columnHeader2.Text = "Count";
+            this.columnHeader2.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.columnHeader2.Width = -2;
+            // 
+            // columnHeader3
+            // 
+            this.columnHeader3.Text = "Path";
+            this.columnHeader3.Width = -2;
             // 
             // FormSelectFolders
             // 
@@ -96,5 +122,8 @@ namespace SteamTool
         private System.Windows.Forms.Button BtnExit;
         private System.Windows.Forms.Button BtnOk;
         private System.Windows.Forms.ListView LsvFolders;
+        private System.Windows.Forms.ColumnHeader columnHeader1;
+        private System.Windows.Forms.ColumnHeader columnHeader2;
+        private System.Windows.Forms.ColumnHeader columnHeader3;
     }
 }
